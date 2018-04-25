@@ -482,6 +482,8 @@
             </tr>
         </tfoot>
     </table>
+
+    {{config('ima.column_rrd_log') }}
 @endsection
 
 @section('footer')
@@ -506,16 +508,14 @@ $(document).ready(function() {
 $(document).ready(function() {
     $('#example').DataTable( {
         dom: 'Bfrtip',
-        stateSave: true,
         buttons: [
             {
-                extend: 'colvis',
-                postfixButtons: [ 'colvisRestore' ]
+                extend: 'colvis'
             }
         ],
         columnDefs: [
             {
-                targets: 1,
+                targets: [1],
                 visible: false
             }
         ]

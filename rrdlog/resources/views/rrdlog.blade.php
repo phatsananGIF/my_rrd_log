@@ -56,6 +56,7 @@
         </div>
 
 
+
         <div class="col-md-12 ">
             <div class="panel panel-default">
                 
@@ -68,8 +69,7 @@
                         </div>
                     </div><!-- row-->
                 </div>
-                    
-                
+                                    
 
                 <div class="panel-body">
                 <div class="table-responsive">
@@ -77,7 +77,6 @@
                     <table class= "table table-striped table-bordered table-hover table-condensed" id = "tb-showlist">
                         <thead>
                             <tr>
-                                <th>NO.</th>
                                 
                                 @foreach ( config('ima.column_rrd_log') as $data)
                                 <th>{{ $data }}</th>
@@ -158,7 +157,6 @@
 window.onload = function() {
     $('#tb-showlist').DataTable( {
         dom: 'i<"html5buttons" B>f',
-        stateSave: true,
         buttons: [
             {
                 extend: 'colvis',
@@ -170,7 +168,13 @@ window.onload = function() {
             buttons: {
                 colvis: 'Columns'
             }
-        }
+        },
+        columnDefs: [
+            {
+                targets: [ {{config('ima.columnDefs')}} ] ,
+                visible: false
+            }
+        ]
 
     } );
 
