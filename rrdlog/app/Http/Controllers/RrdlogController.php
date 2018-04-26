@@ -89,7 +89,9 @@ class RrdlogController extends Controller
         
         $dir = config('ima.rrd_log_path');
         $dircid = config('ima.rrd_log_path/cid');
+        $dircid_tmp = config('ima.rrd_log_path_tmp/cid');
         $dir_selectfile = config('ima.rrd_log_path_selectfile');
+        $dir_selectfile_tmp = config('ima.rrd_log_path_tmp');
         $name_cus = "";
 
 
@@ -109,13 +111,22 @@ class RrdlogController extends Controller
                     ] );
             }
 
+            //--- copy file to tmp --//
+            File::copy($dircid.$cidfile.".log",$dircid_tmp.$cidfile.".log");
+            $dir = $dircid_tmp.$cidfile.".log";
+            $dir_delete = $dircid_tmp;
+
+
             //--- get name cus ---//
             $results = DB::select('SELECT name FROM im_customer WHERE cus_code = '.$cidfile);
             $results = json_decode(json_encode($results), True);
             $name_cus = $results[0]['name'];
 
         }else if($listFile != ""){
-            $dir = $dir_selectfile.$listFile;
+            //--- copy file to tmp --//
+            File::copy($dir_selectfile.$listFile, $dir_selectfile_tmp.$listFile);
+            $dir = $dir_selectfile_tmp.$listFile;
+            $dir_delete = $dir_selectfile_tmp;
         }
         
         //---อ่านไฟล์---//
@@ -220,6 +231,8 @@ class RrdlogController extends Controller
         }
         fclose($file);
 
+        //-- delete all tmp --//
+        File::cleanDirectory($dir_delete);
 
         return redirect()->action('RrdlogController@index')->with( [
             'cidfile' => $cidfile,
@@ -228,14 +241,15 @@ class RrdlogController extends Controller
             'lengthselect' => $lengthselect,
             'listFile' => $listFile,
             'data_rrdlog' => $row
-            ] );
+        ] );
 
     }//f.viewlogRRD
 
 
     public function downloadfileAllRRD($filename){
 
-        $dir = config('ima.rrd_log_path_selectfile').$filename;
+        File::copy(config('ima.rrd_log_path_selectfile').$filename, config('ima.rrd_log_path_tmp').$filename);
+        $dir = config('ima.rrd_log_path_tmp').$filename;
         return response()->download($dir);
 
     }//f.downloadfileAllRRD
@@ -255,7 +269,8 @@ class RrdlogController extends Controller
                 ] );
         }
 
-        $dir = config('ima.rrd_log_path/cid').$filename.'.log';
+        File::copy(config('ima.rrd_log_path/cid').$filename.'.log', config('ima.rrd_log_path_tmp/cid').$filename.'.log');
+        $dir = config('ima.rrd_log_path_tmp/cid').$filename.'.log';
         return response()->download($dir);
 
     }//f.downloadfileRRDcid

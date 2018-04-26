@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+
 @section('content')
 <div class="container">
     <div class="row">
@@ -154,6 +155,7 @@
 
 
 <script>
+
 window.onload = function() {
     $('#tb-showlist').DataTable( {
         dom: 'i<"html5buttons" B>f',
@@ -178,7 +180,8 @@ window.onload = function() {
 
     } );
 
-}
+}// window.onload
+
 
 
 
