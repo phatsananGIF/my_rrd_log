@@ -19,7 +19,7 @@ class RrdlogController extends Controller
         $name_cus = "";
         $notfile = "";
         $deletefile = "";
-        $data_rrdlog =[];
+        $data_rrdlog ="";
         
 
         $length = config('ima.length_row');
@@ -85,6 +85,7 @@ class RrdlogController extends Controller
        $serial = $request->serial;
        $lengthselect  = $request->length;
        $listFile = $request->listFile;
+       $row="";
 
         
         $dir = config('ima.rrd_log_path');
@@ -129,110 +130,70 @@ class RrdlogController extends Controller
             $dir_delete = $dir_selectfile_tmp;
         }
         
-        //---อ่านไฟล์---//
-        $file = fopen($dir, 'r');
-        $row=[];
+        //---อ่านไฟล์ ทั้งหมดเลย---//
+        $lines = file($dir);
 
-        $line = '';
-        $countlines = 1;
-        $cursor = 0;
-
-        fseek($file, $cursor--, SEEK_END);
-        $char = fgetc($file);
-
-        while ($countlines <= $lengthselect) {
-
-            if( $char !== false && $char !== "\n" && $char !== "\r"){
-                $line = $char . $line;
-
-            }else if($char == "\n" && $line!=""){
-                //--text=>array--//
-                $item = explode(",",$line);
-
-                //ตัดเอาวันที่และเวลา
-                $myDate = $item[0];
-                $myDate = explode(" ",$myDate);
-               
-                if(count($myDate) >= 2){
-                    $item[0]=$myDate[0]." ".$myDate[1];
-                }
-                
-                
-                if(count($item) >= 33){
-                    if($serial != "" && $serial == trim($item[2])){
-                        $row[] = $item;
-                        $countlines++;
-                    }else if($serial == ""){
-                        $row[] = $item;
-                        $countlines++;
-                    }
-
-                }else if(count($item) >= 19 ){
-
-                    for($col=count($item); $col<33; $col++){
-                        $item = array_merge($item, [""]); 
-                    }
-                    
-                    if($serial != "" && $serial == trim($item[2])){
-                        $row[] = $item;
-                        $countlines++;
-                    }else if($serial == ""){
-                        $row[] = $item;
-                        $countlines++;
-                    }
-                }
-
-                $line = '';
-
-            }
-            
-            $pointer= fseek($file, $cursor--, SEEK_END);
-            $char = fgetc($file);
-
-            if($pointer=='-1'){
-                if($line!=""){
-                    //--text=>array--//
-                    $item = explode(",",$line);
-                    
-                    //ตัดเอาวันที่และเวลา
-                    $myDate = $item[0];
-                    $myDate = explode(" ",$myDate);
-                
-                    if(count($myDate) >= 2){
-                        $item[0]=$myDate[0]." ".$myDate[1];
-                    }
-
-
-                    if(count($item) >= 33){
-                        if($serial != "" && $serial == trim($item[2])){
-                            $row[] = $item;
-                            $countlines++;
-                        }else if($serial == ""){
-                            $row[] = $item;
-                            $countlines++;
-                        }
-                    }else if(count($item) >= 19 ){
-                        for($col=count($item); $col<=33; $col++){
-                            $item = array_merge($item, [""]); 
-                        }
-
-                        if($serial != "" && $serial == trim($item[2])){
-                            $row[] = $item;
-                            $countlines++;
-                        }else if($serial == ""){
-                            $row[] = $item;
-                            $countlines++;
-                        }
-                    }
-                }
-                break;
-            }
-
+        
+        //--- ค้นหา serial ---//
+        if($serial != ""){
+            $lines = preg_grep("[".$serial."]", $lines);
         }
-        fclose($file);
+        
+        krsort($lines);//sort key array จาก มากไปน้อย
 
-        //-- delete all tmp --//
-        File::cleanDirectory($dir_delete);
+
+        if(count($lines) > $lengthselect){
+            $lines = array_splice($lines, count($lines)-$lengthselect);
+        }
+
+        $no=1;
+        foreach($lines as $line){
+            $text_td = "";
+            //--text=>array--//
+            $item = explode(",",$line);
+
+            //ตัดเอาวันที่และเวลา
+            $myDate = $item[0];
+            $myDate = explode(" ",$myDate);
+
+        
+            if(count($myDate) >= 2){
+                $item[0]=$myDate[0]." ".$myDate[1];
+            }
+
+            
+            if(count($item) >= 33){
+
+                foreach($item as $item_one){
+                    $text_td .= "<td>".$item_one."</td>";
+                }
+                $row .= "<tr><td>".$no."</td>".$text_td."</tr>";
+
+            }else if(count($item) >= 19 ){
+
+                for($col=count($item); $col<33; $col++){
+                    $item = array_merge($item, [""]); 
+                }
+                foreach($item as $item_one){
+                    $text_td .= "<td>".$item_one."</td>";
+                }
+                $row .= "<tr><td>".$no."</td>".$text_td."</tr>";
+            }
+            $no++;
+            
+
+        }//end foreach
+        
+/*
+        echo '<pre>';
+        print_r($row);
+        echo  '</pre>';
+
+
+        die();
+*/
+
+
 
         return redirect()->action('RrdlogController@index')->with( [
             'cidfile' => $cidfile,
@@ -242,6 +203,7 @@ class RrdlogController extends Controller
             'listFile' => $listFile,
             'data_rrdlog' => $row
         ] );
+        
 
     }//f.viewlogRRD
 

@@ -64,7 +64,7 @@
                 <div class="panel-heading">
                     <div class="row">
                         <div class="col-xs-9">
-                            @if (count($data_rrdlog) > 0 || $name_cus != "")
+                            @if ($data_rrdlog != "" || $name_cus != "")
                                 <h4>{{ $name_cus }}</h4>
                             @endif
                         </div>
@@ -82,25 +82,17 @@
                                 @foreach ( config('ima.column_rrd_log') as $data)
                                 <th>{{ $data }}</th>
                                 @endforeach
-                            
 
                             </tr>
                         </thead>
                        
 
                         <tbody>
-                        @if (count($data_rrdlog) > 0)
-                            <?php $n=1 ?>
-                            @foreach ($data_rrdlog as $arrdata)
-                            <?php  ?>
-                                <tr>
-                                    <td> {{ $n++ }} </td>                               
-                                    @foreach ($arrdata as $data)
-                                    <td> {{ $data }} </td>
-                                    @endforeach
-                                </tr>
-                            @endforeach
-                        @endif
+
+                        <?php 
+                            echo $data_rrdlog;
+                        ?>
+                       
                         </tbody>
 
                     </table>
