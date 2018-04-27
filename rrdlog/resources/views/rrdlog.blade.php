@@ -22,8 +22,8 @@
 
                     <div class="col-sm-5">
                         <div class="form-group">
-                            {{ Form::label('serial', 'S/N') }}
-                            {{ Form::text('serial',$serial, ['class'=>'form-control', 'placeholder'=>'serial' ]) }}
+                            {{ Form::label('serial', 'Search') }}
+                            {{ Form::text('serial',$serial, ['class'=>'form-control', 'placeholder'=>'Search' ]) }}
                         </div>
                     </div>
 

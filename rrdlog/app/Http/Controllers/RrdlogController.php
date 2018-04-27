@@ -141,6 +141,8 @@ class RrdlogController extends Controller
         
         krsort($lines);//sort key array จาก มากไปน้อย
 
+        
+
 
         if(count($lines) > $lengthselect){
             $lines = array_splice($lines, count($lines)-$lengthselect);
@@ -150,6 +152,7 @@ class RrdlogController extends Controller
         foreach($lines as $line){
             $text_td = "";
             //--text=>array--//
+            $line = str_replace($serial , '<my style="background-color: #ffff42">'.$serial."</my>" , $line , $count);
             $item = explode(",",$line);
 
             //ตัดเอาวันที่และเวลา
