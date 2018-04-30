@@ -85,7 +85,7 @@ class RrdlogController extends Controller
        $serial = $request->serial;
        $lengthselect  = $request->length;
        $listFile = $request->listFile;
-       $row="";
+       $arrayData=[];
 
         
         $dir = config('ima.rrd_log_path');
@@ -167,34 +167,36 @@ class RrdlogController extends Controller
             
             if(count($item) >= 33){
 
-                foreach($item as $item_one){
-                    $text_td .= "<td>".$item_one."</td>";
-                }
-                $row .= "<tr><td>".$no."</td>".$text_td."</tr>";
+                array_unshift($item, $no);
+                $arrayData[] = $item;
+                $no++;
 
-            }else if(count($item) >= 19 ){
+            }else if(count($item) < 33 ){
 
                 for($col=count($item); $col<33; $col++){
                     $item = array_merge($item, [""]); 
                 }
-                foreach($item as $item_one){
-                    $text_td .= "<td>".$item_one."</td>";
-                }
-                $row .= "<tr><td>".$no."</td>".$text_td."</tr>";
+
+                array_unshift($item, $no);
+                $arrayData[]=$item;
+                $no++;
             }
-            $no++;
+            
             
 
         }//end foreach
         
-/*
+        $jsonData = json_encode($arrayData);
+
+        /*
         echo '<pre>';
-        print_r($row);
+        print_r($arrayData);
         echo  '</pre>';
 
 
         die();
-*/
+        */
+
 
 
 
@@ -204,7 +206,7 @@ class RrdlogController extends Controller
             'name_cus'=> $name_cus,
             'lengthselect' => $lengthselect,
             'listFile' => $listFile,
-            'data_rrdlog' => $row
+            'data_rrdlog' => $jsonData
         ] );
         
 

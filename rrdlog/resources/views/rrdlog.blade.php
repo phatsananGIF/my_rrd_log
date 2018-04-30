@@ -90,7 +90,7 @@
                         <tbody>
 
                         <?php 
-                            echo $data_rrdlog;
+                            //echo $data_rrdlog;
                         ?>
                        
                         </tbody>
@@ -149,7 +149,11 @@
 <script>
 
 window.onload = function() {
+    var my_data = <?php echo $data_rrdlog; ?>
+
+
     $('#tb-showlist').DataTable( {
+        data: my_data,
         dom: 'i<"html5buttons" B>f',
         buttons: [
             {
