@@ -22,7 +22,7 @@
                     <div class="col-sm-5">
                         <div class="form-group">
                             {{ Form::label('serial', 'Search') }}
-                            {{ Form::text('serial',$serial, ['class'=>'form-control', 'placeholder'=>'Search' ]) }}
+                            {{ Form::text('serial',null, ['class'=>'form-control', 'placeholder'=>'Search' ]) }}
                         </div>
                     </div>
 
@@ -36,7 +36,7 @@
                     <div class="col-sm-5">
                         <div class="form-group">
                             {{ Form::label('length', 'length') }}
-                            {{ Form::select('length', $length, $lengthselect, ['class'=>'form-control' ]) }}
+                            {{ Form::select('length', $length, null, ['class'=>'form-control' ]) }}
                         </div>
                     </div>
 

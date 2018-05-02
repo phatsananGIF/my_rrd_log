@@ -12,21 +12,15 @@ class RrdlogController extends Controller
 {
     public function index(){
         $file_select = "snmpd.log";
-        $lengthselect = 10;
         $cid = "";
-        $serial = "";
-        $name_cus = "";
         $notfile = "";
         $deletefile = "";
-        $data_rrdlog ="";
         
 
         $length = config('ima.length_row');
 
         if(session()->has('cidfile')){
             $cid = session('cidfile');
-            $lengthselect = session('lengthselect');
-            $name_cus = session('name_cus');
 
         }
         if(session()->has('notfile')){
@@ -34,12 +28,6 @@ class RrdlogController extends Controller
         }
         if(session()->has('deletefile')){
             $deletefile = session('deletefile');
-        }
-        if(session()->has('data_rrdlog')){
-            $data_rrdlog = session('data_rrdlog');
-        }
-        if(session()->has('serial')){
-            $serial = session('serial');
         }
         if(session()->has('listFile')){
             $file_select = session('listFile');
@@ -62,13 +50,9 @@ class RrdlogController extends Controller
         return view('rrdlog', [ 'files'=>$files, 
                                 'file_select'=>$file_select, 
                                 'length'=>$length, 
-                                'lengthselect'=>$lengthselect, 
                                 'cid'=>$cid,
-                                'serial'=>$serial, 
-                                'name_cus'=>$name_cus, 
                                 'notfile'=>$notfile,
-                                'deletefile'=>$deletefile,
-                                'data_rrdlog'=>$data_rrdlog 
+                                'deletefile'=>$deletefile
                                 ]);
                                 
 
