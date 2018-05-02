@@ -10,8 +10,7 @@
 
                 <div class="panel-body">
                    
-                {!! Form::open(['url' => '/rrdlog/viewlogRRD']) !!}
-                    {{ Form::token() }}
+                {!! Form::open() !!}
 
                     <div class="col-sm-5">
                         <div class="form-group">
@@ -43,7 +42,7 @@
 
                     <div class="col-xs-10">
                         <div class="form-group">
-                            {{ Form::submit('view', ['class'=>'btn btn-success']) }}
+                            {{ Form::button('view',['class'=>'btn btn-success', 'onclick'=>'getdata()']) }}
                             {{ Form::button('download',['class'=>'btn btn-primary', 'onclick'=>'downloadfile()']) }}
                             {{ Form::button('delete',['class'=>'btn btn-danger', 'onclick'=>'deletefile()']) }}
                         </div>
@@ -58,15 +57,13 @@
 
 
 
-        <div class="col-md-12 ">
+        <div class="col-md-12 " id="table_box">
             <div class="panel panel-default">
                 
                 <div class="panel-heading">
                     <div class="row">
                         <div class="col-xs-9">
-                            @if ($data_rrdlog != "" || $name_cus != "")
-                                <h4>{{ $name_cus }}</h4>
-                            @endif
+                            <h4 id="hcus"></h4>
                         </div>
                     </div><!-- row-->
                 </div>
@@ -86,12 +83,7 @@
                             </tr>
                         </thead>
                        
-
                         <tbody>
-
-                        <?php 
-                            //echo $data_rrdlog;
-                        ?>
                        
                         </tbody>
 
@@ -109,17 +101,6 @@
 
 @section('footer')
 
-
-    @if (count($errors) > 0)
-        <script>
-            swal({
-                title: "Please select",
-                text: "<?php foreach( $errors->all() as $error ){ echo $error.' '; } ?>",
-                icon: "warning",
-                dangerMode: true,
-            })
-        </script>
-    @endif
 
     @if ($notfile != "")
         <script>
@@ -148,35 +129,81 @@
 
 <script>
 
-window.onload = function() {
-    var my_data = <?php echo $data_rrdlog; ?>
+$(document).ready(function(){
+    document.getElementById('table_box').style.visibility = "hidden";
 
+});//end document.ready
 
-    $('#tb-showlist').DataTable( {
-        data: my_data,
-        dom: 'i<"html5buttons" B>f',
-        buttons: [
-            {
-                extend: 'colvis',
-                collectionLayout: 'fixed three-column'
-            }
-        ],
-        bPaginate : false,
-        language: {
-            buttons: {
-                colvis: 'Columns'
-            }
+function getdata(){
+    document.getElementById('table_box').style.visibility = "visible";
+    $('#tb-showlist').DataTable().clear().destroy();
+
+    var cidfile = document.getElementById("cidfile").value;
+    var serial = document.getElementById("serial").value;
+    var length = document.getElementById("length").value;
+    var listFile = document.getElementById("listFile").value;
+    
+
+    dataI={'_token': '{{ csrf_token() }}', "cidfile":cidfile, "serial":serial, "length":length, "listFile":listFile}; 
+    $.ajax({ 
+        type:"POST",
+        url:"{{ url('rrdlog/viewlogRRD') }}",
+        cache:false,
+        dataType:"JSON",
+        data:dataI,
+        async:true,
+        beforeSend: function() {
+            showPleaseWait();
         },
-        columnDefs: [
-            {
-                targets: [ {{config('ima.columnDefs')}} ] ,
-                visible: false
+        success:function(result){
+            var resultdata = null;
+
+            if(result.status == 'not found'){
+                hidePleaseWait();
+                swal({
+                    title: "warning",
+                    text: "File CID "+cidfile+" not found.",
+                    icon: "warning",
+                    dangerMode: true,
+                })
+            }else if(result.status == 'success'){
+                resultdata = result.data;
+                
+                $("#hcus").html(result.name_cus);
             }
-        ]
 
-    } );
+            var showlist = $('#tb-showlist').DataTable( {
+                data: resultdata,
+                dom: 'li<"html5buttons" B>ftp',
+                pageLength: 50,
+                lengthMenu: [
+                    [ 50, 100, 1000 ],
+                    [ '50', '100', '1,000' ]
+                ],
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        collectionLayout: 'fixed three-column'
+                    }
+                ],
+                language: {
+                    buttons: {
+                        colvis: 'Columns'
+                    }
+                },
+                columnDefs: [
+                    {
+                        targets: [ {{config('ima.columnDefs')}} ] ,
+                        visible: false
+                    }
+                ]
+            } );//end DataTable
 
-}// window.onload
+            hidePleaseWait();
+            
+        }//end success
+    });//end $.ajax 
+}
 
 
 
@@ -248,6 +275,41 @@ function deletefile(){
 
 
 }//f.deletefile
+
+
+
+
+/**
+ * Displays overlay with "Please wait" text. Based on bootstrap modal. Contains animated progress bar.
+ */
+function showPleaseWait() {
+    var modalLoading = '<div class="modal" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false" role="dialog">\
+        <div class="modal-dialog">\
+            <div class="modal-content">\
+                <div class="modal-header">\
+                    <h4 class="modal-title">Please wait...</h4>\
+                </div>\
+                <div class="modal-body">\
+                    <div class="progress">\
+                      <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar"\
+                      aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%; height: 40px">\
+                      </div>\
+                    </div>\
+                </div>\
+            </div>\
+        </div>\
+    </div>';
+    $(document.body).append(modalLoading);
+    $("#pleaseWaitDialog").modal("show");
+}
+
+
+/**
+ * Hides "Please wait" overlay. See function showPleaseWait().
+ */
+function hidePleaseWait() {
+    $("#pleaseWaitDialog").modal("hide");
+}
 
 </script>
 

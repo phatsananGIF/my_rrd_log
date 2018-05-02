@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
-use App\Http\Requests\RrdlogRequest;
 use File;
 use DB;
 
@@ -79,7 +78,7 @@ class RrdlogController extends Controller
 
 
 
-    public function viewlogRRD(RrdlogRequest $request){
+    public function viewlogRRD(Request $request){
 
        $cidfile = $request->cidfile;
        $serial = $request->serial;
@@ -102,14 +101,12 @@ class RrdlogController extends Controller
             //-- ค้นหาไฟล์ --//
             $Find_files = File::glob($dir);
 
+            //--ถ้าหาไฟล์ไม่เจอ--//
             if (count($Find_files)==0){
-                return redirect()->action('RrdlogController@index')->with( [
-                    'cidfile' => $cidfile,
-                    'serial' => $serial,
-                    'lengthselect' => $lengthselect,
-                    'listFile' => $listFile,
-                    'notfile'=>'File CID '.$cidfile.' not found.'
-                    ] );
+                return array(
+                    'status' => 'not found',
+                    'name_cus'=> null,
+                    'data' => null);
             }
 
             //--- copy file to tmp --//
@@ -186,8 +183,7 @@ class RrdlogController extends Controller
 
         }//end foreach
         
-        $jsonData = json_encode($arrayData);
-
+        
         /*
         echo '<pre>';
         print_r($arrayData);
@@ -196,19 +192,13 @@ class RrdlogController extends Controller
 
         die();
         */
-
-
-
-
-        return redirect()->action('RrdlogController@index')->with( [
-            'cidfile' => $cidfile,
-            'serial' => $serial,
-            'name_cus'=> $name_cus,
-            'lengthselect' => $lengthselect,
-            'listFile' => $listFile,
-            'data_rrdlog' => $jsonData
-        ] );
         
+        return array(
+                'status' => 'success',
+                'name_cus'=> $name_cus,
+                'data' => $arrayData
+            );
+                
 
     }//f.viewlogRRD
 
