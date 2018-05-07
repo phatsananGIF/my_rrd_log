@@ -57,7 +57,7 @@
 
 
 
-        <div class="col-md-12 " id="table_box">
+        <div class="col-md-12 " id="table_box" style="visibility: hidden">
             <div class="panel panel-default">
                 
                 <div class="panel-heading">
@@ -129,13 +129,9 @@
 
 <script>
 
-$(document).ready(function(){
-    document.getElementById('table_box').style.visibility = "hidden";
-
-});//end document.ready
 
 function getdata(){
-    document.getElementById('table_box').style.visibility = "visible";
+    document.getElementById('table_box').style.visibility = "hidden";
     $('#tb-showlist').DataTable().clear().destroy();
 
     var cidfile = document.getElementById("cidfile").value;
@@ -200,10 +196,12 @@ function getdata(){
             } );//end DataTable
 
             hidePleaseWait();
+            document.getElementById('table_box').style.visibility = "visible";
             
         }//end success
     });//end $.ajax 
-}
+
+}//f.getdata
 
 
 

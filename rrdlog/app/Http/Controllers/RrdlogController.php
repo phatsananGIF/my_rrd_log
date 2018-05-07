@@ -29,9 +29,6 @@ class RrdlogController extends Controller
         if(session()->has('deletefile')){
             $deletefile = session('deletefile');
         }
-        if(session()->has('listFile')){
-            $file_select = session('listFile');
-        }
 
         //อ่านไฟล์ในโฟเดอ//
         $dir = config('ima.rrd_log_path_selectfile');
@@ -77,7 +74,6 @@ class RrdlogController extends Controller
         $dir_selectfile = config('ima.rrd_log_path_selectfile');
         $dir_selectfile_tmp = config('ima.rrd_log_path_tmp');
         $name_cus = "";
-
 
         if($cidfile != ""){
             $dir = $dircid.$cidfile.".log";
