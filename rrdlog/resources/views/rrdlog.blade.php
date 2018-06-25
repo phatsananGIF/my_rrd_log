@@ -21,28 +21,37 @@
 
                     <div class="col-sm-5">
                         <div class="form-group">
+                            {{ Form::label('namecid', 'Name') }}
+                            {{ Form::text('namecid',null, ['class'=>'form-control', 'readonly'=>'readonly' ]) }}
+                        </div>
+                    </div>
+
+                    <div class="col-sm-5">
+                        <div class="form-group">
                             {{ Form::label('serial', 'Search') }}
                             {{ Form::text('serial',null, ['class'=>'form-control', 'placeholder'=>'Search' ]) }}
                         </div>
                     </div>
 
-                    <div class="col-sm-5">
+                    
+
+                    <div class="col-sm-2">
                         <div class="form-group">
-                            {{ Form::label('listFile', 'file') }}
-                            {{ Form::select('listFile', $files, $file_select, ['class'=>'form-control' ]) }}
+                            {{ Form::label('length', 'Length') }}
+                            {{ Form::select('length', $length, null, ['class'=>'form-control' ]) }}
                         </div>
                     </div>
 
-                    <div class="col-sm-5">
+                    <div class="col-sm-3">
                         <div class="form-group">
-                            {{ Form::label('length', 'length') }}
-                            {{ Form::select('length', $length, null, ['class'=>'form-control' ]) }}
+                            {{ Form::label('listFile', 'File') }}
+                            {{ Form::select('listFile', $files, $file_select, ['class'=>'form-control' ]) }}
                         </div>
                     </div>
 
                     <div class="col-xs-10">
                         <div class="form-group">
-                            {{ Form::button('view',['class'=>'btn btn-success', 'onclick'=>'getdata()']) }}
+                            {{ Form::button('Search',['class'=>'btn btn-success', 'onclick'=>'getdata()']) }}
                             {{ Form::button('download',['class'=>'btn btn-primary', 'onclick'=>'downloadfile()']) }}
                             {{ Form::button('delete',['class'=>'btn btn-danger', 'onclick'=>'deletefile()']) }}
                         </div>
@@ -162,10 +171,13 @@ function getdata(){
                     icon: "warning",
                     dangerMode: true,
                 })
+                $("#hcus").html(result.name_cus);
+                document.getElementById("namecid").value = result.name_cus;
             }else if(result.status == 'success'){
                 resultdata = result.data;
                 
                 $("#hcus").html(result.name_cus);
+                document.getElementById("namecid").value = result.name_cus;
             }
 
             var showlist = $('#tb-showlist').DataTable( {

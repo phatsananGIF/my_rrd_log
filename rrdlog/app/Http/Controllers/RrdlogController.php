@@ -39,9 +39,13 @@ class RrdlogController extends Controller
             //เช็คนามสกุลไฟล์ เอาแค่ไฟล์ log
             if(pathinfo($infofile,PATHINFO_EXTENSION)=="log" && pathinfo($infofile,PATHINFO_DIRNAME)."/"==$dir){
                 $file = pathinfo($infofile,PATHINFO_BASENAME);
-                $files[$file] = $file.' ('.date( "d/m/Y H:i:s", filemtime($dir.$file)).')';
+                $filedate = date( "Y/m/d H:i:s", filemtime($dir.$file));
+                $files[$file] = ' ('.$filedate.')'.$file;
+                
             }
         }
+
+        asort($files);
 
 
         return view('rrdlog', [ 'files'=>$files, 
@@ -129,8 +133,22 @@ class RrdlogController extends Controller
         foreach($lines as $line){
             $text_td = "";
             //--text=>array--//
-            $line = str_replace($serial , '<my style="background-color: #ffff42">'.$serial."</my>" , $line , $count);
+            $line = str_replace($serial , '<my class="bg-primary">'.$serial."</my>" , $line , $count);
             $item = explode(",",$line);
+
+
+
+            //ตัดเอา cid
+            $myCID = $item[0];
+            $myCID = explode(":",$myCID);
+
+            $cid =[];
+            if(isset($myCID[2])){
+                $cid = array(trim($myCID[2]));
+                
+            }
+            array_splice($item,1,0,$cid);
+
 
             //ตัดเอาวันที่และเวลา
             $myDate = $item[0];
@@ -141,6 +159,8 @@ class RrdlogController extends Controller
                 $item[0]=$myDate[0]." ".$myDate[1];
             }
 
+
+            
             
             if(count($item) >= 33){
 
@@ -148,7 +168,7 @@ class RrdlogController extends Controller
                 $arrayData[] = $item;
                 $no++;
 
-            }else if(count($item) < 33 ){
+            }else if(count($item) >= 19){
 
                 for($col=count($item); $col<33; $col++){
                     $item = array_merge($item, [""]); 
