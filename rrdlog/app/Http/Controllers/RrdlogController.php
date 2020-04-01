@@ -15,7 +15,7 @@ class RrdlogController extends Controller
         $cid = "";
         $notfile = "";
         $deletefile = "";
-        
+        $all_cus = [];
 
         $length = config('ima.length_row');
 
@@ -32,7 +32,7 @@ class RrdlogController extends Controller
 
         //อ่านไฟล์ในโฟเดอ//
         $dir = config('ima.rrd_log_path_selectfile');
-        $DIRNAME = 
+        
         $contents = File::allFiles($dir, $hidden = false);
 
         foreach ($contents as $infofile) {
@@ -47,11 +47,19 @@ class RrdlogController extends Controller
 
         asort($files);
 
+        //--- get name cus ---//
+        $results = DB::select('SELECT cus_code, name FROM im_customer');
+        foreach($results as $cus){
+            $all_cus[ $cus->cus_code ] = $cus->name;
+        }
+        $all_cus = json_encode($all_cus);
+
 
         return view('rrdlog', [ 'files'=>$files, 
                                 'file_select'=>$file_select, 
                                 'length'=>$length, 
                                 'cid'=>$cid,
+                                'all_cus'=>$all_cus,
                                 'notfile'=>$notfile,
                                 'deletefile'=>$deletefile
                                 ]);
@@ -69,15 +77,20 @@ class RrdlogController extends Controller
        $serial = $request->serial;
        $lengthselect  = $request->length;
        $listFile = $request->listFile;
+       $datepicker =  $request->datepicker;
+
        $arrayData=[];
+       $files = [];
+       $linedata = [];
 
         
         $dir = config('ima.rrd_log_path');
         $dircid = config('ima.rrd_log_path/cid');
         $dircid_tmp = config('ima.rrd_log_path_tmp/cid');
-        $dir_selectfile = config('ima.rrd_log_path_selectfile');
-        $dir_selectfile_tmp = config('ima.rrd_log_path_tmp');
+        $dir_allfile = config('ima.rrd_log_path_selectfile');
+        $dir_file_tmp = config('ima.rrd_log_path_tmp');
         $name_cus = "";
+
 
         if($cidfile != ""){
             $dir = $dircid.$cidfile.".log";
@@ -96,41 +109,85 @@ class RrdlogController extends Controller
             //--- copy file to tmp --//
             File::copy($dircid.$cidfile.".log",$dircid_tmp.$cidfile.".log");
             $dir = $dircid_tmp.$cidfile.".log";
-            $dir_delete = $dircid_tmp;
-
+            $dir_delete = $dircid_tmp.$cidfile.".log";
 
             //--- get name cus ---//
             $results = DB::select('SELECT name FROM im_customer WHERE cus_code = '.$cidfile);
             $results = json_decode(json_encode($results), True);
             $name_cus = $results[0]['name'];
 
-        }else if($listFile != ""){
-            //--- copy file to tmp --//
-            File::copy($dir_selectfile.$listFile, $dir_selectfile_tmp.$listFile);
-            $dir = $dir_selectfile_tmp.$listFile;
-            $dir_delete = $dir_selectfile_tmp;
-        }
-        
-        //---อ่านไฟล์ ทั้งหมดเลย---//
-        $lines = file($dir);
+            //---อ่านไฟล์ ทั้งหมดเลย---//
+            $lines = file($dir);
 
-        
-        //--- ค้นหา serial ---//
-        if($serial != ""){
-            $lines = preg_grep("[".$serial."]", $lines);
-        }
-        
-        krsort($lines);//sort key array จาก มากไปน้อย
+            //--- ค้นหา serial ---//
+            if($serial != ""){
+                $lines = preg_grep("[".$serial."]", $lines);
+            }
+            
+            krsort($lines);//sort key array จาก มากไปน้อย
+            array_splice($linedata,0,0,$lines);
 
+            //ลบไฟล์ in tmp
+            File::delete($dir_delete);
+
+            if(count($linedata) > $lengthselect){
+                $linedata = array_splice($linedata, count($linedata)-$lengthselect);
+            }
+
+        }else if($datepicker != ""){
+            $datepicker = explode("-",$datepicker);
+            $start_date = trim($datepicker[0]);
+            $end_date = trim($datepicker[1]);
+            //อ่านไฟล์ในโฟเดอ//
+            $dir = $dir_allfile;
+            $contents = File::allFiles($dir, $hidden = false);
+            foreach ($contents as $infofile) {
+                //เช็คนามสกุลไฟล์ เอาแค่ไฟล์ log และวันที่
+                $file = pathinfo($infofile,PATHINFO_BASENAME);
+                if(pathinfo($infofile,PATHINFO_EXTENSION)=="log" && pathinfo($infofile,PATHINFO_DIRNAME)."/"==$dir &&
+                    date( "Y/m/d", filemtime($dir.$file)) >= $start_date && date( "Y/m/d", filemtime($dir.$file)) <= $end_date )
+                {
+                    $fileDate = date( "Y/m/d H:i:s", filemtime($dir.$file));
+                    $files[$fileDate] = $file;
+                }
+            }
+            krsort($files);
+
+            foreach($files as $file){
+
+                //--- copy file to tmp --//
+                File::copy($dir_allfile.$file, $dir_file_tmp.$file);
+                $dir = $dir_file_tmp.$file;
+                $dir_delete = $dir_file_tmp.$file;
+  
+                //---อ่านไฟล์ ทั้งหมดเลย---//
+                $lines = file($dir);
+    
+                //--- ค้นหา serial ---//
+                if($serial != ""){
+                    $lines = preg_grep("[".$serial."]", $lines);
+                }
+
+                array_splice($linedata,0,0,$lines);
+    
+                //ลบไฟล์ in tmp
+                File::delete($dir_delete);
+
+                if(count($linedata) > $lengthselect){
+                    $linedata = array_splice($linedata, count($linedata)-$lengthselect);
+                    break;
+                }
+    
+     
+            }//for read
+
+            krsort($linedata);
+
+        }//if-else
         
-
-
-        if(count($lines) > $lengthselect){
-            $lines = array_splice($lines, count($lines)-$lengthselect);
-        }
 
         $no=1;
-        foreach($lines as $line){
+        foreach($linedata as $line){
             $text_td = "";
             //--text=>array--//
             $line = str_replace($serial , '<my class="bg-primary">'.$serial."</my>" , $line , $count);
@@ -192,6 +249,7 @@ class RrdlogController extends Controller
 
         die();
         */
+        
         
         return array(
                 'status' => 'success',

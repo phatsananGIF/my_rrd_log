@@ -26,6 +26,7 @@
                         </div>
                     </div>
 
+
                     <div class="col-sm-5">
                         <div class="form-group">
                             {{ Form::label('serial', 'Search') }}
@@ -33,27 +34,34 @@
                         </div>
                     </div>
 
-                    
-
-                    <div class="col-sm-2">
+                    <div class="col-sm-5">
                         <div class="form-group">
-                            {{ Form::label('length', 'Length') }}
+                            {{ Form::label('datepicker', 'Date') }}
+                            {{ Form::text('datepicker', null, ['class'=>'form-control' ]) }}
+                        </div>
+                    </div>
+
+
+                    <div class="col-sm-5">
+                        <div class="form-group">
+                            {{ Form::label('length', 'Total Line') }}
                             {{ Form::select('length', $length, null, ['class'=>'form-control' ]) }}
                         </div>
                     </div>
 
-                    <div class="col-sm-3">
+                    <div class="col-sm-5">
                         <div class="form-group">
                             {{ Form::label('listFile', 'File') }}
                             {{ Form::select('listFile', $files, $file_select, ['class'=>'form-control' ]) }}
                         </div>
                     </div>
 
+
                     <div class="col-xs-10">
                         <div class="form-group">
-                            {{ Form::button('Search',['class'=>'btn btn-success', 'onclick'=>'getdata()']) }}
-                            {{ Form::button('download',['class'=>'btn btn-primary', 'onclick'=>'downloadfile()']) }}
-                            {{ Form::button('delete',['class'=>'btn btn-danger', 'onclick'=>'deletefile()']) }}
+                            {{ Form::button('Search',['class'=>'btn btn-success', 'onclick'=>'getdata()', 'id'=>'btSearch']) }}
+                            {{ Form::button('Download',['class'=>'btn btn-primary', 'onclick'=>'downloadfile()']) }}
+                            {{ Form::button('Delete',['class'=>'btn btn-danger', 'onclick'=>'deletefile()']) }}
                         </div>
                     </div>
 
@@ -138,6 +146,24 @@
 
 <script>
 
+    $("#cidfile").keyup(function(){
+        
+        var cus_code = <?php echo $all_cus; ?>;
+        var cid = document.getElementById("cidfile").value;
+
+        if(typeof cus_code[cid] != 'undefined'){
+            
+            document.getElementById("btSearch").disabled = false;
+            document.getElementById("namecid").value = cus_code[cid];
+        }else if(cid.length == 0){
+            document.getElementById("btSearch").disabled = false;
+            document.getElementById("namecid").value = null;
+        }else{
+            document.getElementById("btSearch").disabled = true;
+            document.getElementById("namecid").value = null;
+        }
+        
+    });
 
 function getdata(){
     document.getElementById('table_box').style.visibility = "hidden";
@@ -147,9 +173,12 @@ function getdata(){
     var serial = document.getElementById("serial").value;
     var length = document.getElementById("length").value;
     var listFile = document.getElementById("listFile").value;
+    var datepicker = document.getElementById("datepicker").value;
+
+    console.log(datepicker);
     
 
-    dataI={'_token': '{{ csrf_token() }}', "cidfile":cidfile, "serial":serial, "length":length, "listFile":listFile}; 
+    dataI={'_token': '{{ csrf_token() }}', "cidfile":cidfile, "serial":serial, "length":length, "listFile":listFile, "datepicker":datepicker}; 
     $.ajax({ 
         type:"POST",
         url:"{{ url('rrdlog/viewlogRRD') }}",
@@ -161,6 +190,7 @@ function getdata(){
             showPleaseWait();
         },
         success:function(result){
+            console.log(result);
             var resultdata = null;
 
             if(result.status == 'not found'){
@@ -188,7 +218,9 @@ function getdata(){
                     [ 50, 100, 1000 ],
                     [ '50', '100', '1,000' ]
                 ],
+                order: [[ 1, "desc" ]],
                 buttons: [
+                    'excel',
                     {
                         extend: 'colvis',
                         collectionLayout: 'fixed three-column'
@@ -320,6 +352,16 @@ function showPleaseWait() {
 function hidePleaseWait() {
     $("#pleaseWaitDialog").modal("hide");
 }
+
+
+$(function() {
+    $('#datepicker').daterangepicker({
+        locale: {
+            format: 'YYYY/MM/DD'
+        }
+    });
+});//end f.daterangepicker
+
 
 </script>
 

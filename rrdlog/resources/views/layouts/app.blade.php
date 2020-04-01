@@ -72,6 +72,11 @@
 		<script src="{{ asset('js/plugins/datatables/vfs_fonts.js') }}"></script>
 		<script src="{{ asset('js/plugins/datatables/extensions/Buttons/js/buttons.html5.js') }}"></script>
 		<script src="{{ asset('js/plugins/datatables/extensions/Buttons/js/buttons.colVis.js') }}"></script>
+
+        <!-- Include Date Range Picker -->
+        <link href="{{ url('css/plugins/DateRangePicker/daterangepicker.css')}}" rel="stylesheet">
+		<script src="{{ url('js/plugins//DateRangePicker/moment.min.js')}}"></script>
+		<script src="{{ url('js/plugins/DateRangePicker/daterangepicker.js')}}"></script>
     
 
 

@@ -22,6 +22,8 @@ Route::get('/rrdlog/downloadcid/{id}','RrdlogController@downloadfileRRDcid');
 Route::get('/rrdlog/deletefileselect/{id}',array('uses' => 'RrdlogController@deletefileselect'));
 Route::get('/rrdlog/deletefileCID/{id}',array('uses' => 'RrdlogController@deletefileCID'));
 
+Route::get('read', 'ReadallController@index');
+
 
 
 Route::get('/test', function () {
